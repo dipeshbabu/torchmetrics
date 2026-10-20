@@ -78,6 +78,15 @@ def test_fleiss_kappa_zero_denominator():
     torch.testing.assert_close(fleiss_kappa(counts), torch.tensor(0.0))
 
 
+@pytest.mark.parametrize("counts", [torch.zeros(2, 2, dtype=torch.long), torch.eye(2, dtype=torch.long)])
+def test_fleiss_kappa_undefined_pair_agreement(counts):
+    """Safe division must preserve undefined agreement with fewer than two raters."""
+    assert torch.isnan(fleiss_kappa(counts))
+    metric = FleissKappa()
+    metric.update(counts)
+    assert torch.isnan(metric.compute())
+
+
 def _random_counts(high, size):
     """Generate random counts matrix that is fully ranked.
 
